@@ -39,6 +39,9 @@ install(FILES packaging/io.github.chrisjahner.SonyHeadphonesLinux.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES packaging/io.github.chrisjahner.SonyHeadphonesLinux.metainfo.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
+install(FILES resources/sony-headphones-linux.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+    RENAME io.github.chrisjahner.SonyHeadphonesLinux.svg)
 
 set(CPACK_PACKAGE_NAME "sony-headphones-linux")
 set(CPACK_PACKAGE_VENDOR "Chris Jahner")

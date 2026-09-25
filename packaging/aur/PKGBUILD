@@ -1,0 +1,30 @@
+# Maintainer: Chris Jahner <cjahner1@users.noreply.github.com>
+pkgname=sony-headphones-linux
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Native Linux companion for Sony headphones'
+arch=('x86_64')
+url='https://github.com/cjahner1/sony-headphones-linux'
+license=('MIT')
+depends=('qt6-base' 'qt6-declarative' 'bluez')
+makedepends=('cmake' 'ninja' 'git' 'gcc')
+source=("${pkgname}::git+${url}.git#tag=v${pkgver}")
+sha256sums=('SKIP')
+
+prepare() {
+  cd "${srcdir}/${pkgname}"
+  git submodule update --init --recursive
+}
+
+build() {
+  cmake -S "${srcdir}/${pkgname}" -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+  install -Dm644 "${srcdir}/${pkgname}/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

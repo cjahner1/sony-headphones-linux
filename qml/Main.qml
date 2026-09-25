@@ -28,7 +28,11 @@ ApplicationWindow {
                         Item { height: 12 }
                         Row { spacing: 28
                             Repeater { model: [{label:"LEFT", value:device.batteryLeft}, {label:"RIGHT", value:device.batteryRight}, {label:"CASE", value:device.batteryCase}]
-                                Column { spacing: 5; Label { text: modelData.label; color: "#9498A7"; font.pixelSize: 11; font.weight: Font.Bold }; Label { text: device.connected ? modelData.value + "%" : "—"; color: "#F7F8FC"; font.pixelSize: 28; font.weight: Font.DemiBold } }
+                                Column {
+                                    spacing: 5
+                                    Label { text: modelData.label; color: "#9498A7"; font.pixelSize: 11; font.weight: Font.Bold }
+                                    Label { text: device.connected ? modelData.value + "%" : "—"; color: "#F7F8FC"; font.pixelSize: 28; font.weight: Font.DemiBold }
+                                }
                             }
                         }
                         Item { height: 2 }
@@ -51,7 +55,12 @@ ApplicationWindow {
                 Card { Layout.fillWidth: true; Layout.minimumHeight: 215
                     Column { anchors.fill: parent; anchors.margins: 28; spacing: 16
                         Label { text: "Sound"; color: "#F7F8FC"; font.pixelSize: 19; font.weight: Font.DemiBold }
-                        Row { spacing: 12; Label { text: "Volume"; color: "#B2B6C5"; width: 76; anchors.verticalCenter: parent.verticalCenter }; Slider { width: 240; from: 0; to: 100; value: device.volume; onMoved: device.volume = value }; Label { text: device.volume + "%"; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter } }
+                        Row {
+                            spacing: 12
+                            Label { text: "Volume"; color: "#B2B6C5"; width: 76; anchors.verticalCenter: parent.verticalCenter }
+                            Slider { width: 240; from: 0; to: 100; value: device.volume; onMoved: device.setVolume(value) }
+                            Label { text: device.volume + "%"; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
+                        }
                         Label { text: "Equalizer and Clear Bass will use the verified MDR adapter."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
                     }
                 }
