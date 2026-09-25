@@ -19,10 +19,12 @@ public:
     bool setSpeakToChat(bool enabled);
     bool setDsee(bool enabled);
     bool setVolume(int volume);
+    bool playback(const QString &action);
 signals:
     void stateChanged();
     void batteriesChanged(int left, int right, int caseLevel);
     void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
+    void playbackStateChanged(bool playing);
 private slots:
     void poll();
 private:

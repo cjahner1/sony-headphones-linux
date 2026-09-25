@@ -15,6 +15,7 @@ DeviceController::DeviceController(QObject *parent) : QObject(parent), m_bluez(t
     connect(&m_mdr, &MdrTransport::soundStateChanged, this, [this](int volume, const QString &noise, bool speak, bool dsee) {
         m_volume = volume; m_noiseMode = noise; m_speakToChat = speak; m_dsee = dsee; emit stateChanged();
     });
+    connect(&m_mdr, &MdrTransport::playbackStateChanged, this, [this](bool playing) { m_playing = playing; emit stateChanged(); });
     m_bluez.refresh();
 }
 QString DeviceController::name() const {
@@ -34,6 +35,7 @@ void DeviceController::setSpeakToChat(bool enabled) {
 void DeviceController::setDsee(bool enabled) {
     if (m_mdr.setDsee(enabled)) { m_dsee = enabled; emit stateChanged(); }
 }
+void DeviceController::playback(const QString &action) { m_mdr.playback(action); }
 void DeviceController::setVolume(int volume) {
     if (m_mdr.setVolume(volume)) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
 }

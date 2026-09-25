@@ -90,18 +90,18 @@ void MdrTransport::updateBatteries() {
 
 void MdrTransport::updateSoundState() {
     if (!m_headphones) return;
-    MDRPlayback playback{};
-    MDRNoiseControl noise{};
-    MDRSpeakToChat speak{};
-    MDREqualizer equalizer{};
-    if (mdrHeadphonesGetPlayback(m_headphones, &playback) != MDR_RESULT_OK ||
-        mdrHeadphonesGetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK ||
-        mdrHeadphonesGetSpeakToChat(m_headphones, &speak) != MDR_RESULT_OK ||
-        mdrHeadphonesGetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK) return;
+    MDRPlayback playback{}; MDRNoiseControl noise{}; MDRSpeakToChat speak{}; MDREqualizer equalizer{};
+    const bool hasPlayback = mdrHeadphonesGetPlayback(m_headphones, &playback) == MDR_RESULT_OK;
+    const bool hasNoise = mdrHeadphonesGetNoiseControl(m_headphones, &noise) == MDR_RESULT_OK;
+    const bool hasSpeak = mdrHeadphonesGetSpeakToChat(m_headphones, &speak) == MDR_RESULT_OK;
+    const bool hasEqualizer = mdrHeadphonesGetEqualizer(m_headphones, &equalizer) == MDR_RESULT_OK;
     QString mode = "Off";
-    if (noise.mode == MDR_NOISE_MODE_CANCELLING) mode = "Noise cancelling";
-    else if (noise.mode == MDR_NOISE_MODE_AMBIENT) mode = "Ambient sound";
-    emit soundStateChanged(playback.volume, mode, speak.enabled == MDR_TRUE, equalizer.dsee_enabled == MDR_TRUE);
+    if (hasNoise && noise.mode == MDR_NOISE_MODE_CANCELLING) mode = "Noise cancelling";
+    else if (hasNoise && noise.mode == MDR_NOISE_MODE_AMBIENT) mode = "Ambient sound";
+    emit soundStateChanged(hasPlayback ? playback.volume : 0, mode,
+                           hasSpeak && speak.enabled == MDR_TRUE,
+                           hasEqualizer && equalizer.dsee_enabled == MDR_TRUE);
+    if (hasPlayback) emit playbackStateChanged(playback.status == MDR_PLAYBACK_PLAYING);
 }
 
 bool MdrTransport::commit(const QString &operation) {
@@ -149,4 +149,18 @@ bool MdrTransport::setVolume(int volume) {
     playback.volume = static_cast<uint8_t>(std::clamp(volume, 0, 100));
     if (mdrHeadphonesSetPlayback(m_headphones, &playback) != MDR_RESULT_OK) return false;
     return commit("Volume");
+}
+
+bool MdrTransport::playback(const QString &action) {
+    if (!m_ready || !m_headphones) return false;
+    MDRPlaybackCommand command{};
+    if (action == "play") command.action = MDR_PLAYBACK_PLAY;
+    else if (action == "pause") command.action = MDR_PLAYBACK_PAUSE;
+    else if (action == "next") command.action = MDR_PLAYBACK_NEXT;
+    else if (action == "previous") command.action = MDR_PLAYBACK_PREVIOUS;
+    else return false;
+    const auto result = mdrHeadphonesPlayback(m_headphones, &command);
+    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
+    qWarning() << "Playback command failed:" << mdrResultString(result);
+    return false;
 }

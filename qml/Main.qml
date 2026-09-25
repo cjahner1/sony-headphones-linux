@@ -63,6 +63,11 @@ ApplicationWindow {
                             Label { text: device.volume + "%"; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
                         }
                         Label { text: "Equalizer and Clear Bass will use the verified MDR adapter."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
+                        Row { spacing: 8; enabled: device.mdrReady
+                            Button { text: "‹‹"; onClicked: device.playback("previous") }
+                            Button { text: device.playing ? "Pause" : "Play"; onClicked: device.playback(device.playing ? "pause" : "play") }
+                            Button { text: "››"; onClicked: device.playback("next") }
+                        }
                     }
                 }
                 Card { Layout.fillWidth: true; Layout.minimumHeight: 215
