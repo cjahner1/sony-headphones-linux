@@ -5,6 +5,7 @@
 #include <mdr-c/Headphones.h>
 
 #include <QDebug>
+#include <QSysInfo>
 
 #include <algorithm>
 #include <vector>
@@ -135,11 +136,30 @@ void MdrTransport::updatePairedDevices() {
         return;
     }
     qInfo() << "MDR multipoint devices:" << count;
-    for (uint32_t i = 0; i < count; ++i)
+    QString playbackSource;
+    const auto localHost = QSysInfo::machineHostName();
+    bool playbackControllable = false;
+    m_localPlaybackDeviceId.clear();
+    for (uint32_t i = 0; i < count; ++i) {
         qInfo().noquote() << QString("MDR device: '%1' (%2), connected=%3, playback-source=%4")
             .arg(devices[i].name, devices[i].macAddress)
             .arg(devices[i].connected == MDR_TRUE ? "true" : "false")
             .arg(devices[i].playback_device == MDR_TRUE ? "true" : "false");
+        if (devices[i].playback_device == MDR_TRUE) {
+            playbackSource = QString::fromUtf8(devices[i].name);
+            playbackControllable = playbackSource.compare(localHost, Qt::CaseInsensitive) == 0;
+        }
+        if (QString::fromUtf8(devices[i].name).compare(localHost, Qt::CaseInsensitive) == 0 &&
+            devices[i].connected == MDR_TRUE)
+            m_localPlaybackDeviceId = QString::fromUtf8(devices[i].macAddress);
+    }
+    if (playbackSource.isEmpty()) {
+        qInfo() << "MDR reports no active playback source";
+        playbackSource = "No active source";
+    }
+    qInfo().noquote() << QString("MDR playback source: '%1'; local host '%2'; media controls available=%3")
+        .arg(playbackSource, localHost, playbackControllable ? "true" : "false");
+    emit playbackSourceChanged(playbackSource, playbackControllable);
 }
 
 bool MdrTransport::commit(const QString &operation) {
@@ -212,5 +232,25 @@ bool MdrTransport::playback(const QString &action) {
         return true;
     }
     qWarning() << "MDR playback command failed:" << action << mdrResultString(result);
+    return false;
+}
+
+bool MdrTransport::selectLocalPlaybackSource() {
+    if (!m_ready || !m_headphones || m_localPlaybackDeviceId.isEmpty()) {
+        qWarning() << "Cannot switch playback to this laptop: local multipoint device is unavailable";
+        return false;
+    }
+    const auto deviceId = m_localPlaybackDeviceId.toUtf8();
+    MDRPairedDeviceAction action{};
+    action.command = MDR_PAIRED_DEVICE_SELECT_PLAYBACK;
+    action.device_id = deviceId.constData();
+    action.device_id_size = static_cast<uint32_t>(deviceId.size());
+    qInfo() << "Requesting MDR playback source switch to local device:" << m_localPlaybackDeviceId;
+    const auto result = mdrHeadphonesSetPairedDevice(m_headphones, &action);
+    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) {
+        qInfo() << "MDR playback source switch accepted";
+        return true;
+    }
+    qWarning() << "MDR playback source switch failed:" << mdrResultString(result);
     return false;
 }

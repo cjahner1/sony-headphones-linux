@@ -18,6 +18,8 @@ class DeviceController final : public QObject {
     Q_PROPERTY(bool speakToChat READ speakToChat NOTIFY stateChanged)
     Q_PROPERTY(bool dsee READ dsee NOTIFY stateChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY stateChanged)
+    Q_PROPERTY(QString playbackSource READ playbackSource NOTIFY stateChanged)
+    Q_PROPERTY(bool mediaControlsAvailable READ mediaControlsAvailable NOTIFY stateChanged)
     Q_PROPERTY(QString protocolStatus READ protocolStatus NOTIFY stateChanged)
     Q_PROPERTY(bool mdrReady READ mdrReady NOTIFY stateChanged)
 public:
@@ -32,6 +34,8 @@ public:
     bool speakToChat() const { return m_speakToChat; }
     bool dsee() const { return m_dsee; }
     bool playing() const { return m_playing; }
+    QString playbackSource() const { return m_playbackSource; }
+    bool mediaControlsAvailable() const { return m_mediaControlsAvailable; }
     QString protocolStatus() const;
     bool mdrReady() const { return m_mdr.ready(); }
     Q_INVOKABLE void refresh();
@@ -39,6 +43,7 @@ public:
     Q_INVOKABLE void setSpeakToChat(bool enabled);
     Q_INVOKABLE void setDsee(bool enabled);
     Q_INVOKABLE void playback(const QString &action);
+    Q_INVOKABLE void selectLocalPlaybackSource();
     void setVolume(int volume);
 signals:
     void stateChanged();
@@ -47,5 +52,6 @@ private:
     MdrTransport m_mdr;
     int m_batteryLeft = 0, m_batteryRight = 0, m_batteryCase = 0, m_volume = 50;
     QString m_noiseMode = "Noise cancelling";
-    bool m_speakToChat = false, m_dsee = true, m_playing = false;
+    bool m_speakToChat = false, m_dsee = true, m_playing = false, m_mediaControlsAvailable = false;
+    QString m_playbackSource = "Checking playback source…";
 };

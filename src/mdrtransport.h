@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
 #include <QTimer>
 
 struct MDRConnectionLinux;
@@ -21,11 +22,13 @@ public:
     bool setDsee(bool enabled);
     bool setVolume(int volume);
     bool playback(const QString &action);
+    bool selectLocalPlaybackSource();
 signals:
     void stateChanged();
     void batteriesChanged(int left, int right, int caseLevel);
     void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
     void playbackStateChanged(bool playing);
+    void playbackSourceChanged(const QString &source, bool controllable);
 private slots:
     void poll();
 private:
@@ -42,4 +45,5 @@ private:
     bool m_connecting = false;
     bool m_ready = false;
     QString m_pendingPlayback;
+    QString m_localPlaybackDeviceId;
 };
