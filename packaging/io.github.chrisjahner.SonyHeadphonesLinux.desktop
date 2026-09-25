@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Sony Headphones
+Comment=Control Sony WF-1000XM6 headphones
+Exec=sony-headphones-linux
+Icon=io.github.chrisjahner.SonyHeadphonesLinux
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Settings;Qt;

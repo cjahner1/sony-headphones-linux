@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.chrisjahner.SonyHeadphonesLinux</id>
+  <name>Sony Headphones</name>
+  <summary>A native companion for Sony headphones</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description><p>A lightweight, native Linux controller built around the Sony MDR protocol.</p></description>
+  <launchable type="desktop-id">io.github.chrisjahner.SonyHeadphonesLinux.desktop</launchable>
+</component>
