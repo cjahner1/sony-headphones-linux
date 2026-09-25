@@ -114,9 +114,18 @@ void MdrTransport::updateSoundState() {
 void MdrTransport::updatePairedDevices() {
     if (!m_headphones) return;
     uint32_t count = 0;
-    if (mdrHeadphonesGetPairedDevices(m_headphones, nullptr, &count) != MDR_RESULT_OK || !count) return;
+    const auto countResult = mdrHeadphonesGetPairedDevices(m_headphones, nullptr, &count);
+    if (countResult != MDR_RESULT_OK) {
+        qInfo() << "MDR multipoint device count unavailable:" << mdrResultString(countResult);
+        return;
+    }
+    if (!count) { qInfo() << "MDR reports no multipoint devices"; return; }
     std::vector<MDRPairedDevice> devices(count);
-    if (mdrHeadphonesGetPairedDevices(m_headphones, devices.data(), &count) != MDR_RESULT_OK) return;
+    const auto listResult = mdrHeadphonesGetPairedDevices(m_headphones, devices.data(), &count);
+    if (listResult != MDR_RESULT_OK) {
+        qWarning() << "MDR multipoint device list unavailable:" << mdrResultString(listResult);
+        return;
+    }
     qInfo() << "MDR multipoint devices:" << count;
     for (uint32_t i = 0; i < count; ++i)
         qInfo().noquote() << QString("MDR device: '%1' (%2), connected=%3, playback-source=%4")
