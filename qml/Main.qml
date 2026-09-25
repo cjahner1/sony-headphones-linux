@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Sony.Headphones
+import "components"
 
 ApplicationWindow {
     visible: true; width: 1040; height: 710; minimumWidth: 860; minimumHeight: 600
