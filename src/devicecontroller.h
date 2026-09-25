@@ -20,6 +20,7 @@ class DeviceController final : public QObject {
     Q_PROPERTY(bool playing READ playing NOTIFY stateChanged)
     Q_PROPERTY(QString playbackSource READ playbackSource NOTIFY stateChanged)
     Q_PROPERTY(bool mediaControlsAvailable READ mediaControlsAvailable NOTIFY stateChanged)
+    Q_PROPERTY(QString playbackSourceSwitchStatus READ playbackSourceSwitchStatus NOTIFY stateChanged)
     Q_PROPERTY(QString protocolStatus READ protocolStatus NOTIFY stateChanged)
     Q_PROPERTY(bool mdrReady READ mdrReady NOTIFY stateChanged)
 public:
@@ -36,6 +37,7 @@ public:
     bool playing() const { return m_playing; }
     QString playbackSource() const { return m_playbackSource; }
     bool mediaControlsAvailable() const { return m_mediaControlsAvailable; }
+    QString playbackSourceSwitchStatus() const { return m_playbackSourceSwitchStatus; }
     QString protocolStatus() const;
     bool mdrReady() const { return m_mdr.ready(); }
     Q_INVOKABLE void refresh();
@@ -54,4 +56,5 @@ private:
     QString m_noiseMode = "Noise cancelling";
     bool m_speakToChat = false, m_dsee = true, m_playing = false, m_mediaControlsAvailable = false;
     QString m_playbackSource = "Checking playback source…";
+    QString m_playbackSourceSwitchStatus;
 };

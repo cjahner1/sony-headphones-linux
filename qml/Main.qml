@@ -83,6 +83,14 @@ ApplicationWindow {
                             text: "Switch playback to this laptop"
                             onClicked: device.selectLocalPlaybackSource()
                         }
+                        Label {
+                            visible: device.playbackSourceSwitchStatus.length > 0
+                            text: device.playbackSourceSwitchStatus
+                            color: "#BAC9FF"
+                            font.pixelSize: 13
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                        }
                         Row { spacing: 8; enabled: device.mdrReady && device.mediaControlsAvailable; opacity: enabled ? 1 : 0.45
                             Button { text: "‹‹"; onClicked: device.playback("previous") }
                             Button { text: device.playing ? "Pause" : "Play"; onClicked: device.playback(device.playing ? "pause" : "play") }

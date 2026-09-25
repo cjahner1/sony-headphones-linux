@@ -170,6 +170,7 @@ void MdrTransport::logSourceSwitchResult() {
     MDRSourceSwitchControlResult result{};
     if (mdrHeadphonesGetSourceSwitchControlResult(m_headphones, &result) != MDR_RESULT_OK) {
         qWarning() << "MDR playback source switch completed, but no result was available";
+        emit playbackSourceSwitchStatusChanged("The XM6 replied without a switch result.");
         return;
     }
     QString outcome = "failed";
@@ -178,6 +179,7 @@ void MdrTransport::logSourceSwitchResult() {
     else if (result == MDR_SOURCE_SWITCH_CONTROL_FAILED_NOT_CONNECTED) outcome = "failed: target is not connected for audio";
     else if (result == MDR_SOURCE_SWITCH_CONTROL_FAILED_VOICE_ASSISTANT) outcome = "failed: voice assistant has priority";
     qInfo() << "MDR playback source switch result:" << outcome;
+    emit playbackSourceSwitchStatusChanged("XM6 source switch: " + outcome);
 }
 
 bool MdrTransport::commit(const QString &operation) {
@@ -259,6 +261,7 @@ bool MdrTransport::playback(const QString &action) {
 bool MdrTransport::selectLocalPlaybackSource() {
     if (!m_ready || !m_headphones || m_localPlaybackDeviceId.isEmpty()) {
         qWarning() << "Cannot switch playback to this laptop: local multipoint device is unavailable";
+        emit playbackSourceSwitchStatusChanged("This laptop is not available as a connected multipoint device.");
         return false;
     }
     const auto deviceId = m_localPlaybackDeviceId.toUtf8();
@@ -267,6 +270,7 @@ bool MdrTransport::selectLocalPlaybackSource() {
     action.device_id = deviceId.constData();
     action.device_id_size = static_cast<uint32_t>(deviceId.size());
     qInfo() << "Requesting MDR playback source switch to local device:" << m_localPlaybackDeviceId;
+    emit playbackSourceSwitchStatusChanged("Requesting source switch from the XM6…");
     const auto result = mdrHeadphonesSetPairedDevice(m_headphones, &action);
     if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) {
         qInfo() << "MDR playback source switch staged";
@@ -276,11 +280,13 @@ bool MdrTransport::selectLocalPlaybackSource() {
             if (m_sourceSwitchPending) {
                 m_sourceSwitchPending = false;
                 qWarning() << "MDR playback source switch timed out waiting for a headphone response";
+                emit playbackSourceSwitchStatusChanged("The XM6 did not respond to the source-switch request.");
                 updatePairedDevices();
             }
         });
         return true;
     }
     qWarning() << "MDR playback source switch failed:" << mdrResultString(result);
+    emit playbackSourceSwitchStatusChanged("XM6 rejected the source-switch request.");
     return false;
 }

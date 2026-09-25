@@ -23,6 +23,10 @@ DeviceController::DeviceController(QObject *parent) : QObject(parent), m_bluez(t
         m_mediaControlsAvailable = controllable;
         emit stateChanged();
     });
+    connect(&m_mdr, &MdrTransport::playbackSourceSwitchStatusChanged, this, [this](const QString &status) {
+        m_playbackSourceSwitchStatus = status;
+        emit stateChanged();
+    });
     m_bluez.refresh();
 }
 QString DeviceController::name() const {
@@ -49,7 +53,12 @@ void DeviceController::playback(const QString &action) {
     }
     m_mdr.playback(action);
 }
-void DeviceController::selectLocalPlaybackSource() { m_mdr.selectLocalPlaybackSource(); }
+void DeviceController::selectLocalPlaybackSource() {
+    qInfo() << "UI requested playback source switch";
+    m_playbackSourceSwitchStatus = "Button click received — contacting the XM6…";
+    emit stateChanged();
+    m_mdr.selectLocalPlaybackSource();
+}
 void DeviceController::setVolume(int volume) {
     if (m_mdr.setVolume(volume)) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
 }

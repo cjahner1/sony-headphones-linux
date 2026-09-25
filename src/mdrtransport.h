@@ -29,6 +29,7 @@ signals:
     void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
     void playbackStateChanged(bool playing);
     void playbackSourceChanged(const QString &source, bool controllable);
+    void playbackSourceSwitchStatusChanged(const QString &status);
 private slots:
     void poll();
 private:
