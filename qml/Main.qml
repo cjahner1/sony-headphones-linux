@@ -48,6 +48,14 @@ ApplicationWindow {
                             NoiseModeButton { Layout.fillWidth: true; mode: "Off"; selected: device.noiseMode === "Off"; onClicked: device.setNoiseMode("Off") }
                         }
                         Label { text: device.noiseMode; color: "#BAC9FF"; font.pixelSize: 14 }
+                        Row {
+                            visible: device.noiseMode === "Ambient sound"
+                            enabled: device.mdrReady; opacity: enabled ? 1 : 0.45; spacing: 10
+                            Label { text: "Ambient"; color: "#B2B6C5"; width: 62; anchors.verticalCenter: parent.verticalCenter }
+                            Slider { width: 180; from: 0; to: 20; stepSize: 1; value: device.ambientLevel; onMoved: device.setAmbientLevel(value) }
+                            Label { text: device.ambientLevel; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
+                        }
+                        Switch { visible: device.noiseMode === "Ambient sound"; text: "Focus on Voice"; enabled: device.mdrReady; checked: device.focusOnVoice; onToggled: device.setFocusOnVoice(checked) }
                     }
                 }
             }
@@ -62,7 +70,13 @@ ApplicationWindow {
                             Slider { width: 240; from: 0; to: 100; value: device.volume; onMoved: device.setVolume(value) }
                             Label { text: device.volume + "%"; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
                         }
-                        Label { text: "Equalizer and Clear Bass will use the verified MDR adapter."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
+                        Label { text: "Clear Bass is applied through MDR; preset/EQ-band editing follows next."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
+                        Row {
+                            enabled: device.mdrReady; opacity: enabled ? 1 : 0.45; spacing: 12
+                            Label { text: "Clear Bass"; color: "#B2B6C5"; width: 76; anchors.verticalCenter: parent.verticalCenter }
+                            Slider { width: 190; from: -10; to: 10; stepSize: 1; value: device.clearBass; onMoved: device.setClearBass(value) }
+                            Label { text: device.clearBass > 0 ? "+" + device.clearBass : device.clearBass; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
+                        }
                         Label {
                             text: "Playback source: " + device.playbackSource
                             color: device.mediaControlsAvailable ? "#8F94A3" : "#F6C453"
@@ -103,7 +117,14 @@ ApplicationWindow {
                         Label { text: "Smart features"; color: "#F7F8FC"; font.pixelSize: 19; font.weight: Font.DemiBold }
                         Switch { text: "Speak-to-Chat"; enabled: device.mdrReady; checked: device.speakToChat; onToggled: device.setSpeakToChat(checked) }
                         Switch { text: "DSEE Extreme"; enabled: device.mdrReady; checked: device.dsee; onToggled: device.setDsee(checked) }
-                        Label { text: "Settings apply when the MDR session is connected."; color: "#8F94A3"; font.pixelSize: 13 }
+                        Row {
+                            enabled: device.mdrReady; opacity: enabled ? 1 : 0.45; spacing: 10
+                            Label { text: "Voice guidance"; color: "#B2B6C5"; width: 104; anchors.verticalCenter: parent.verticalCenter }
+                            Slider { width: 145; from: -2; to: 2; stepSize: 1; value: device.voiceGuidanceVolume; onMoved: device.setVoiceGuidanceVolume(value) }
+                            Label { text: device.voiceGuidanceVolume > 0 ? "+" + device.voiceGuidanceVolume : device.voiceGuidanceVolume; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
+                        }
+                        Switch { text: "Automatic multipoint switching"; enabled: device.mdrReady; checked: device.automaticSourceSwitch; onToggled: device.setAutomaticSourceSwitch(checked) }
+                        Label { text: "Touch-gesture reassignment needs an upstream XM6 API bridge; other settings apply through MDR."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
                     }
                 }
             }

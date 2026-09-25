@@ -27,6 +27,10 @@ DeviceController::DeviceController(QObject *parent) : QObject(parent), m_bluez(t
         m_playbackSourceSwitchStatus = status;
         emit stateChanged();
     });
+    connect(&m_mdr, &MdrTransport::advancedStateChanged, this, [this](int ambient, bool focus, int clearBass, int voice, bool automatic) {
+        m_ambientLevel = ambient; m_focusOnVoice = focus; m_clearBass = clearBass;
+        m_voiceGuidanceVolume = voice; m_automaticSourceSwitch = automatic; emit stateChanged();
+    });
     m_bluez.refresh();
 }
 QString DeviceController::name() const {
@@ -59,6 +63,11 @@ void DeviceController::selectLocalPlaybackSource() {
     emit stateChanged();
     m_mdr.selectLocalPlaybackSource();
 }
+void DeviceController::setAmbientLevel(int level) { if (m_mdr.setAmbientLevel(level)) { m_ambientLevel = std::clamp(level, 0, 20); emit stateChanged(); } }
+void DeviceController::setFocusOnVoice(bool enabled) { if (m_mdr.setFocusOnVoice(enabled)) { m_focusOnVoice = enabled; m_noiseMode = "Ambient sound"; emit stateChanged(); } }
+void DeviceController::setClearBass(int level) { if (m_mdr.setClearBass(level)) { m_clearBass = std::clamp(level, -10, 10); emit stateChanged(); } }
+void DeviceController::setVoiceGuidanceVolume(int level) { if (m_mdr.setVoiceGuidanceVolume(level)) { m_voiceGuidanceVolume = std::clamp(level, -2, 2); emit stateChanged(); } }
+void DeviceController::setAutomaticSourceSwitch(bool enabled) { if (m_mdr.setAutomaticSourceSwitch(enabled)) { m_automaticSourceSwitch = enabled; emit stateChanged(); } }
 void DeviceController::setVolume(int volume) {
     if (m_mdr.setVolume(volume)) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
 }

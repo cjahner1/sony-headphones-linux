@@ -78,6 +78,7 @@ void MdrTransport::poll() {
     if (event == MDR_EVENT_BATTERY_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) updateBatteries();
     if (event == MDR_EVENT_NOISE_CONTROL_CHANGED || event == MDR_EVENT_SPEAK_TO_CHAT_CHANGED ||
         event == MDR_EVENT_PLAYBACK_CHANGED || event == MDR_EVENT_EQUALIZER_CHANGED ||
+        event == MDR_EVENT_VOICE_GUIDANCE_CHANGED || event == MDR_EVENT_PAIRED_DEVICES_CHANGED ||
         event == MDR_EVENT_SYNC_COMPLETE) updateSoundState();
     if (event == MDR_EVENT_PAIRED_DEVICES_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) {
         if (m_sourceSwitchPending && event == MDR_EVENT_PAIRED_DEVICES_CHANGED) logSourceSwitchResult();
@@ -108,11 +109,14 @@ void MdrTransport::updateBatteries() {
 
 void MdrTransport::updateSoundState() {
     if (!m_headphones) return;
-    MDRPlayback playback{}; MDRNoiseControl noise{}; MDRSpeakToChat speak{}; MDREqualizer equalizer{};
+    MDRPlayback playback{}; MDRNoiseControl noise{}; MDRSpeakToChat speak{}; MDREqualizer equalizer{}; MDRVoiceGuidance voice{};
     const bool hasPlayback = mdrHeadphonesGetPlayback(m_headphones, &playback) == MDR_RESULT_OK;
     const bool hasNoise = mdrHeadphonesGetNoiseControl(m_headphones, &noise) == MDR_RESULT_OK;
     const bool hasSpeak = mdrHeadphonesGetSpeakToChat(m_headphones, &speak) == MDR_RESULT_OK;
     const bool hasEqualizer = mdrHeadphonesGetEqualizer(m_headphones, &equalizer) == MDR_RESULT_OK;
+    const bool hasVoice = mdrHeadphonesGetVoiceGuidance(m_headphones, &voice) == MDR_RESULT_OK;
+    MDRBoolean sourceSwitch = MDR_TRUE;
+    const bool hasSourceSwitch = mdrHeadphonesGetSourceSwitchControl(m_headphones, &sourceSwitch) == MDR_RESULT_OK;
     QString mode = "Off";
     if (hasNoise && noise.mode == MDR_NOISE_MODE_CANCELLING) mode = "Noise cancelling";
     else if (hasNoise && noise.mode == MDR_NOISE_MODE_AMBIENT) mode = "Ambient sound";
@@ -120,6 +124,11 @@ void MdrTransport::updateSoundState() {
                            hasSpeak && speak.enabled == MDR_TRUE,
                            hasEqualizer && equalizer.dsee_enabled == MDR_TRUE);
     if (hasPlayback) emit playbackStateChanged(playback.status == MDR_PLAYBACK_PLAYING);
+    emit advancedStateChanged(hasNoise ? noise.ambient_level : 0,
+                              hasNoise && noise.focus_on_voice == MDR_TRUE,
+                              hasEqualizer ? equalizer.clear_bass : 0,
+                              hasVoice ? voice.volume : 0,
+                              !hasSourceSwitch || sourceSwitch == MDR_TRUE);
 }
 
 void MdrTransport::updatePairedDevices() {
@@ -230,6 +239,47 @@ bool MdrTransport::setVolume(int volume) {
     playback.volume = static_cast<uint8_t>(std::clamp(volume, 0, 100));
     if (mdrHeadphonesSetPlayback(m_headphones, &playback) != MDR_RESULT_OK) return false;
     return commit("Volume");
+}
+
+bool MdrTransport::setAmbientLevel(int level) {
+    MDRNoiseControl noise{};
+    if (!m_ready || mdrHeadphonesGetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    noise.mode = MDR_NOISE_MODE_AMBIENT;
+    noise.ambient_level = static_cast<uint8_t>(std::clamp(level, 0, 20));
+    if (mdrHeadphonesSetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    return commit("Ambient sound level");
+}
+
+bool MdrTransport::setFocusOnVoice(bool enabled) {
+    MDRNoiseControl noise{};
+    if (!m_ready || mdrHeadphonesGetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    noise.mode = MDR_NOISE_MODE_AMBIENT;
+    noise.focus_on_voice = enabled ? MDR_TRUE : MDR_FALSE;
+    if (mdrHeadphonesSetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    return commit("Focus on Voice");
+}
+
+bool MdrTransport::setClearBass(int level) {
+    MDREqualizer equalizer{};
+    if (!m_ready || mdrHeadphonesGetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK ||
+        equalizer.available != MDR_TRUE) return false;
+    equalizer.clear_bass = static_cast<int8_t>(std::clamp(level, -10, 10));
+    if (mdrHeadphonesSetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK) return false;
+    return commit("Clear Bass");
+}
+
+bool MdrTransport::setVoiceGuidanceVolume(int level) {
+    MDRVoiceGuidance voice{};
+    if (!m_ready || mdrHeadphonesGetVoiceGuidance(m_headphones, &voice) != MDR_RESULT_OK) return false;
+    voice.volume = static_cast<int8_t>(std::clamp(level, -2, 2));
+    if (mdrHeadphonesSetVoiceGuidance(m_headphones, &voice) != MDR_RESULT_OK) return false;
+    return commit("Voice guidance volume");
+}
+
+bool MdrTransport::setAutomaticSourceSwitch(bool enabled) {
+    if (!m_ready || mdrHeadphonesSetSourceSwitchControl(m_headphones, enabled ? MDR_TRUE : MDR_FALSE) != MDR_RESULT_OK)
+        return false;
+    return commit("Automatic source switching");
 }
 
 bool MdrTransport::playback(const QString &action) {

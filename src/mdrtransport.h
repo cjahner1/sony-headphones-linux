@@ -21,12 +21,19 @@ public:
     bool setSpeakToChat(bool enabled);
     bool setDsee(bool enabled);
     bool setVolume(int volume);
+    bool setAmbientLevel(int level);
+    bool setFocusOnVoice(bool enabled);
+    bool setClearBass(int level);
+    bool setVoiceGuidanceVolume(int level);
+    bool setAutomaticSourceSwitch(bool enabled);
     bool playback(const QString &action);
     bool selectLocalPlaybackSource();
 signals:
     void stateChanged();
     void batteriesChanged(int left, int right, int caseLevel);
     void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
+    void advancedStateChanged(int ambientLevel, bool focusOnVoice, int clearBass,
+                              int voiceGuidanceVolume, bool automaticSourceSwitch);
     void playbackStateChanged(bool playing);
     void playbackSourceChanged(const QString &source, bool controllable);
     void playbackSourceSwitchStatusChanged(const QString &status);

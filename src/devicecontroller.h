@@ -21,6 +21,11 @@ class DeviceController final : public QObject {
     Q_PROPERTY(QString playbackSource READ playbackSource NOTIFY stateChanged)
     Q_PROPERTY(bool mediaControlsAvailable READ mediaControlsAvailable NOTIFY stateChanged)
     Q_PROPERTY(QString playbackSourceSwitchStatus READ playbackSourceSwitchStatus NOTIFY stateChanged)
+    Q_PROPERTY(int ambientLevel READ ambientLevel NOTIFY stateChanged)
+    Q_PROPERTY(bool focusOnVoice READ focusOnVoice NOTIFY stateChanged)
+    Q_PROPERTY(int clearBass READ clearBass NOTIFY stateChanged)
+    Q_PROPERTY(int voiceGuidanceVolume READ voiceGuidanceVolume NOTIFY stateChanged)
+    Q_PROPERTY(bool automaticSourceSwitch READ automaticSourceSwitch NOTIFY stateChanged)
     Q_PROPERTY(QString protocolStatus READ protocolStatus NOTIFY stateChanged)
     Q_PROPERTY(bool mdrReady READ mdrReady NOTIFY stateChanged)
 public:
@@ -38,6 +43,11 @@ public:
     QString playbackSource() const { return m_playbackSource; }
     bool mediaControlsAvailable() const { return m_mediaControlsAvailable; }
     QString playbackSourceSwitchStatus() const { return m_playbackSourceSwitchStatus; }
+    int ambientLevel() const { return m_ambientLevel; }
+    bool focusOnVoice() const { return m_focusOnVoice; }
+    int clearBass() const { return m_clearBass; }
+    int voiceGuidanceVolume() const { return m_voiceGuidanceVolume; }
+    bool automaticSourceSwitch() const { return m_automaticSourceSwitch; }
     QString protocolStatus() const;
     bool mdrReady() const { return m_mdr.ready(); }
     Q_INVOKABLE void refresh();
@@ -46,6 +56,11 @@ public:
     Q_INVOKABLE void setDsee(bool enabled);
     Q_INVOKABLE void playback(const QString &action);
     Q_INVOKABLE void selectLocalPlaybackSource();
+    Q_INVOKABLE void setAmbientLevel(int level);
+    Q_INVOKABLE void setFocusOnVoice(bool enabled);
+    Q_INVOKABLE void setClearBass(int level);
+    Q_INVOKABLE void setVoiceGuidanceVolume(int level);
+    Q_INVOKABLE void setAutomaticSourceSwitch(bool enabled);
     void setVolume(int volume);
 signals:
     void stateChanged();
@@ -57,4 +72,6 @@ private:
     bool m_speakToChat = false, m_dsee = true, m_playing = false, m_mediaControlsAvailable = false;
     QString m_playbackSource = "Checking playback source…";
     QString m_playbackSourceSwitchStatus;
+    int m_ambientLevel = 10, m_clearBass = 0, m_voiceGuidanceVolume = 0;
+    bool m_focusOnVoice = false, m_automaticSourceSwitch = true;
 };
