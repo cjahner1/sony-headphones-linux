@@ -18,6 +18,7 @@ file(GLOB MDR_SOURCES CONFIGURE_DEPENDS ${MDR_VENDOR}/libmdr/src/*.cpp ${MDR_VEN
 add_library(mdr STATIC ${MDR_SOURCES})
 target_link_libraries(mdr PUBLIC mdr_Includes)
 target_include_directories(mdr PUBLIC ${MDR_VENDOR}/libmdr/src)
+target_include_directories(mdr BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/cmake/fmt-compat)
 
 add_library(mdr-bt STATIC
     ${MDR_VENDOR}/libmdr-bt/src/Linux/ConnectionLinux.cpp
