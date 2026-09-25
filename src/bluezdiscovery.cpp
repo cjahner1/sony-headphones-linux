@@ -2,6 +2,7 @@
 
 #include <QDBusInterface>
 #include <QDBusMessage>
+#include <QDBusMetaType>
 #include <QDBusReply>
 #include <QDBusVariant>
 #include <QDebug>
