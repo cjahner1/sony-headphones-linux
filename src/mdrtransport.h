@@ -22,11 +22,13 @@ public:
 signals:
     void stateChanged();
     void batteriesChanged(int left, int right, int caseLevel);
+    void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
 private slots:
     void poll();
 private:
     void fail(const QString &message);
     void updateBatteries();
+    void updateSoundState();
     bool commit(const QString &operation);
     MDRConnectionLinux *m_linux = nullptr;
     MDRHeadphones *m_headphones = nullptr;

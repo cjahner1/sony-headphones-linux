@@ -67,8 +67,11 @@ void MdrTransport::poll() {
         return fail(QString("MDR protocol: %1").arg(mdrResultString(result)));
     if (event == MDR_EVENT_INITIALIZE_COMPLETE) mdrHeadphonesRequestSync(m_headphones);
     if (event == MDR_EVENT_BATTERY_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) updateBatteries();
+    if (event == MDR_EVENT_NOISE_CONTROL_CHANGED || event == MDR_EVENT_SPEAK_TO_CHAT_CHANGED ||
+        event == MDR_EVENT_PLAYBACK_CHANGED || event == MDR_EVENT_EQUALIZER_CHANGED ||
+        event == MDR_EVENT_SYNC_COMPLETE) updateSoundState();
     if (mdrHeadphonesIsReady(m_headphones) && !m_ready) {
-        m_ready = true; m_status = "MDR connected"; updateBatteries(); emit stateChanged();
+        m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); emit stateChanged();
     }
 }
 
@@ -83,6 +86,22 @@ void MdrTransport::updateBatteries() {
         if (batteries[i].part == MDR_BATTERY_CASE) caseLevel = batteries[i].level_percent;
     }
     emit batteriesChanged(left, right, caseLevel);
+}
+
+void MdrTransport::updateSoundState() {
+    if (!m_headphones) return;
+    MDRPlayback playback{};
+    MDRNoiseControl noise{};
+    MDRSpeakToChat speak{};
+    MDREqualizer equalizer{};
+    if (mdrHeadphonesGetPlayback(m_headphones, &playback) != MDR_RESULT_OK ||
+        mdrHeadphonesGetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK ||
+        mdrHeadphonesGetSpeakToChat(m_headphones, &speak) != MDR_RESULT_OK ||
+        mdrHeadphonesGetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK) return;
+    QString mode = "Off";
+    if (noise.mode == MDR_NOISE_MODE_CANCELLING) mode = "Noise cancelling";
+    else if (noise.mode == MDR_NOISE_MODE_AMBIENT) mode = "Ambient sound";
+    emit soundStateChanged(playback.volume, mode, speak.enabled == MDR_TRUE, equalizer.dsee_enabled == MDR_TRUE);
 }
 
 bool MdrTransport::commit(const QString &operation) {

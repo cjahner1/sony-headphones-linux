@@ -12,6 +12,9 @@ DeviceController::DeviceController(QObject *parent) : QObject(parent), m_bluez(t
     connect(&m_mdr, &MdrTransport::batteriesChanged, this, [this](int left, int right, int caseLevel) {
         m_batteryLeft = left; m_batteryRight = right; m_batteryCase = caseLevel; emit stateChanged();
     });
+    connect(&m_mdr, &MdrTransport::soundStateChanged, this, [this](int volume, const QString &noise, bool speak, bool dsee) {
+        m_volume = volume; m_noiseMode = noise; m_speakToChat = speak; m_dsee = dsee; emit stateChanged();
+    });
     m_bluez.refresh();
 }
 QString DeviceController::name() const {
