@@ -73,6 +73,11 @@ void MdrTransport::poll() {
     if (mdrHeadphonesIsReady(m_headphones) && !m_ready) {
         m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); emit stateChanged();
     }
+    if (m_ready && !m_pendingPlayback.isEmpty() && mdrHeadphonesIsReady(m_headphones)) {
+        const auto pending = m_pendingPlayback;
+        m_pendingPlayback.clear();
+        playback(pending);
+    }
 }
 
 void MdrTransport::updateBatteries() {
@@ -110,7 +115,12 @@ bool MdrTransport::commit(const QString &operation) {
         return false;
     }
     const auto result = mdrHeadphonesRequestCommit(m_headphones);
-    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
+    if (result == MDR_RESULT_OK) return true;
+    if (result == MDR_RESULT_INPROGRESS) {
+        m_pendingPlayback = action;
+        qInfo() << "Queued playback command until MDR is ready:" << action;
+        return true;
+    }
     qWarning() << operation << "commit failed:" << mdrResultString(result);
     return false;
 }

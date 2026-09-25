@@ -39,4 +39,5 @@ private:
     QString m_status = "MDR transport idle";
     bool m_connecting = false;
     bool m_ready = false;
+    QString m_pendingPlayback;
 };
