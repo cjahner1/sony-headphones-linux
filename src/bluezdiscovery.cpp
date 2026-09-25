@@ -7,6 +7,17 @@
 #include <QDBusVariant>
 #include <QDebug>
 
+namespace {
+QVariant bluezProperty(const QVariantMap &properties, const QString &key) {
+    const auto value = properties.value(key);
+    // Qt may either preserve a D-Bus variant wrapper or unwrap a{sv} values
+    // directly into QVariant, depending on the registered container type.
+    if (value.metaType().id() == qMetaTypeId<QDBusVariant>())
+        return value.value<QDBusVariant>().variant();
+    return value;
+}
+}
+
 BluezDiscovery::BluezDiscovery(QObject *parent) : QObject(parent) {
     qDBusRegisterMetaType<BluezInterfaceMap>();
     qDBusRegisterMetaType<BluezManagedObjects>();
@@ -39,16 +50,15 @@ void BluezDiscovery::refresh() {
     bool foundConnected = false;
     for (auto object = objects.cbegin(); object != objects.cend(); ++object) {
         const auto props = object.value().value("org.bluez.Device1");
-        const auto name = props.value("Alias").value<QDBusVariant>().variant().toString().isEmpty()
-            ? props.value("Name").value<QDBusVariant>().variant().toString()
-            : props.value("Alias").value<QDBusVariant>().variant().toString();
-        const auto connected = props.value("Connected").value<QDBusVariant>().variant().toBool();
-        const auto paired = props.value("Paired").value<QDBusVariant>().variant().toBool();
+        const auto alias = bluezProperty(props, "Alias").toString();
+        const auto reportedName = bluezProperty(props, "Name").toString();
+        const auto name = alias.isEmpty() ? reportedName : alias;
+        const auto connected = bluezProperty(props, "Connected").toBool();
+        const auto paired = bluezProperty(props, "Paired").toBool();
         if (!props.isEmpty()) {
             qInfo().noquote() << QString("BlueZ device %1: alias='%2', name='%3', paired=%4, connected=%5, Sony-match=%6")
                 .arg(object.key().path(),
-                     props.value("Alias").value<QDBusVariant>().variant().toString(),
-                     props.value("Name").value<QDBusVariant>().variant().toString())
+                     alias, reportedName)
                 .arg(paired ? "true" : "false")
                 .arg(connected ? "true" : "false")
                 .arg(isSonyHeadphones(name) ? "true" : "false");
