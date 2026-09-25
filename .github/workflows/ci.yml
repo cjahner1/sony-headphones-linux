@@ -24,6 +24,14 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --parallel
+      - name: Smoke-test QML startup
+        run: |
+          set +e
+          QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software timeout 5s ./build/sony-headphones-linux > runtime.log 2>&1
+          status=$?
+          cat runtime.log
+          test "$status" -eq 124
+          ! grep -Eqi 'failed to load|is not a type|error compiling' runtime.log
       - name: Package
         run: cpack --config build/CPackConfig.cmake -B dist
       - uses: actions/upload-artifact@v4
