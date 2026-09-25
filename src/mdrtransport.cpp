@@ -10,6 +10,23 @@
 #include <algorithm>
 #include <vector>
 
+namespace {
+QString touchName(MDRAssignableAction action) {
+    if (action == MDR_ASSIGNABLE_PLAYBACK) return "Playback";
+    if (action == MDR_ASSIGNABLE_NOISE_CONTROL) return "Noise control";
+    if (action == MDR_ASSIGNABLE_VOLUME) return "Volume";
+    if (action == MDR_ASSIGNABLE_QUICK_ACCESS) return "Quick Access";
+    return "Unavailable";
+}
+MDRAssignableAction touchAction(const QString &name) {
+    if (name == "Playback") return MDR_ASSIGNABLE_PLAYBACK;
+    if (name == "Noise control") return MDR_ASSIGNABLE_NOISE_CONTROL;
+    if (name == "Volume") return MDR_ASSIGNABLE_VOLUME;
+    if (name == "Quick Access") return MDR_ASSIGNABLE_QUICK_ACCESS;
+    return MDR_ASSIGNABLE_NONE;
+}
+}
+
 MdrTransport::MdrTransport(QObject *parent) : QObject(parent) {
     m_timer.setInterval(20);
     connect(&m_timer, &QTimer::timeout, this, &MdrTransport::poll);
@@ -84,8 +101,9 @@ void MdrTransport::poll() {
         if (m_sourceSwitchPending && event == MDR_EVENT_PAIRED_DEVICES_CHANGED) logSourceSwitchResult();
         updatePairedDevices();
     }
+    if (event == MDR_EVENT_ASSIGNABLE_CONTROLS_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) updateTouchAssignments();
     if (mdrHeadphonesIsReady(m_headphones) && !m_ready) {
-        m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); updatePairedDevices(); emit stateChanged();
+        m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); updatePairedDevices(); updateTouchAssignments(); emit stateChanged();
     }
     if (m_ready && !m_pendingPlayback.isEmpty() && mdrHeadphonesIsReady(m_headphones)) {
         const auto pending = m_pendingPlayback;
@@ -172,6 +190,20 @@ void MdrTransport::updatePairedDevices() {
     qInfo().noquote() << QString("MDR playback source: '%1'; local host '%2'; media controls available=%3")
         .arg(playbackSource, localHost, playbackControllable ? "true" : "false");
     emit playbackSourceChanged(playbackSource, playbackControllable);
+}
+
+void MdrTransport::updateTouchAssignments() {
+    if (!m_headphones) return;
+    uint32_t count = 0;
+    if (mdrHeadphonesGetAssignableControls(m_headphones, nullptr, &count) != MDR_RESULT_OK || count != 2) return;
+    std::vector<MDRAssignableControl> controls(count);
+    if (mdrHeadphonesGetAssignableControls(m_headphones, controls.data(), &count) != MDR_RESULT_OK) return;
+    QString left = "Unavailable", right = "Unavailable";
+    for (uint32_t i = 0; i < count; ++i) {
+        if (controls[i].location == MDR_ASSIGNABLE_ACTION_KEY_LEFT) left = touchName(controls[i].action);
+        if (controls[i].location == MDR_ASSIGNABLE_ACTION_KEY_RIGHT) right = touchName(controls[i].action);
+    }
+    emit touchAssignmentsChanged(left, right);
 }
 
 void MdrTransport::logSourceSwitchResult() {
@@ -280,6 +312,19 @@ bool MdrTransport::setAutomaticSourceSwitch(bool enabled) {
     if (!m_ready || mdrHeadphonesSetSourceSwitchControl(m_headphones, enabled ? MDR_TRUE : MDR_FALSE) != MDR_RESULT_OK)
         return false;
     return commit("Automatic source switching");
+}
+
+bool MdrTransport::setTouchAssignment(const QString &side, const QString &assignment) {
+    const auto action = touchAction(assignment);
+    if (!m_ready || action == MDR_ASSIGNABLE_NONE) return false;
+    uint32_t count = 2;
+    MDRAssignableControl controls[2]{};
+    if (mdrHeadphonesGetAssignableControls(m_headphones, controls, &count) != MDR_RESULT_OK || count != 2) return false;
+    const auto location = side == "left" ? MDR_ASSIGNABLE_ACTION_KEY_LEFT : MDR_ASSIGNABLE_ACTION_KEY_RIGHT;
+    bool found = false;
+    for (uint32_t i = 0; i < count; ++i) if (controls[i].location == location) { controls[i].action = action; found = true; }
+    if (!found || mdrHeadphonesSetAssignableControls(m_headphones, controls, count) != MDR_RESULT_OK) return false;
+    return commit("Touch assignment");
 }
 
 bool MdrTransport::playback(const QString &action) {

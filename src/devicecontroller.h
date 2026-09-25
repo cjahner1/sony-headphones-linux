@@ -26,6 +26,8 @@ class DeviceController final : public QObject {
     Q_PROPERTY(int clearBass READ clearBass NOTIFY stateChanged)
     Q_PROPERTY(int voiceGuidanceVolume READ voiceGuidanceVolume NOTIFY stateChanged)
     Q_PROPERTY(bool automaticSourceSwitch READ automaticSourceSwitch NOTIFY stateChanged)
+    Q_PROPERTY(QString leftTouchAssignment READ leftTouchAssignment NOTIFY stateChanged)
+    Q_PROPERTY(QString rightTouchAssignment READ rightTouchAssignment NOTIFY stateChanged)
     Q_PROPERTY(QString protocolStatus READ protocolStatus NOTIFY stateChanged)
     Q_PROPERTY(bool mdrReady READ mdrReady NOTIFY stateChanged)
 public:
@@ -48,6 +50,8 @@ public:
     int clearBass() const { return m_clearBass; }
     int voiceGuidanceVolume() const { return m_voiceGuidanceVolume; }
     bool automaticSourceSwitch() const { return m_automaticSourceSwitch; }
+    QString leftTouchAssignment() const { return m_leftTouchAssignment; }
+    QString rightTouchAssignment() const { return m_rightTouchAssignment; }
     QString protocolStatus() const;
     bool mdrReady() const { return m_mdr.ready(); }
     Q_INVOKABLE void refresh();
@@ -61,6 +65,7 @@ public:
     Q_INVOKABLE void setClearBass(int level);
     Q_INVOKABLE void setVoiceGuidanceVolume(int level);
     Q_INVOKABLE void setAutomaticSourceSwitch(bool enabled);
+    Q_INVOKABLE void setTouchAssignment(const QString &side, const QString &assignment);
     void setVolume(int volume);
 signals:
     void stateChanged();
@@ -74,4 +79,5 @@ private:
     QString m_playbackSourceSwitchStatus;
     int m_ambientLevel = 10, m_clearBass = 0, m_voiceGuidanceVolume = 0;
     bool m_focusOnVoice = false, m_automaticSourceSwitch = true;
+    QString m_leftTouchAssignment = "Unavailable", m_rightTouchAssignment = "Unavailable";
 };

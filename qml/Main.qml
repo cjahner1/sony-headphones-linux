@@ -124,7 +124,13 @@ ApplicationWindow {
                             Label { text: device.voiceGuidanceVolume > 0 ? "+" + device.voiceGuidanceVolume : device.voiceGuidanceVolume; color: "#F7F8FC"; anchors.verticalCenter: parent.verticalCenter }
                         }
                         Switch { text: "Automatic multipoint switching"; enabled: device.mdrReady; checked: device.automaticSourceSwitch; onToggled: device.setAutomaticSourceSwitch(checked) }
-                        Label { text: "Touch-gesture reassignment needs an upstream XM6 API bridge; other settings apply through MDR."; color: "#8F94A3"; font.pixelSize: 13; wrapMode: Text.WordWrap; width: parent.width }
+                        Label { text: "Touch sensor"; color: "#F7F8FC"; font.pixelSize: 16; font.weight: Font.DemiBold }
+                        Row { enabled: device.mdrReady; opacity: enabled ? 1 : 0.45; spacing: 10
+                            Label { text: "Left"; color: "#B2B6C5"; width: 42; anchors.verticalCenter: parent.verticalCenter }
+                            ComboBox { id: leftTouch; model: ["Playback", "Noise control", "Volume", "Quick Access"]; currentIndex: Math.max(0, model.indexOf(device.leftTouchAssignment)); onActivated: device.setTouchAssignment("left", currentText) }
+                            Label { text: "Right"; color: "#B2B6C5"; width: 42; anchors.verticalCenter: parent.verticalCenter }
+                            ComboBox { id: rightTouch; model: ["Playback", "Noise control", "Volume", "Quick Access"]; currentIndex: Math.max(0, model.indexOf(device.rightTouchAssignment)); onActivated: device.setTouchAssignment("right", currentText) }
+                        }
                     }
                 }
             }

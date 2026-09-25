@@ -1,4 +1,4 @@
 [submodule "vendor/SonyHeadphonesClient"]
 	path = vendor/SonyHeadphonesClient
-	url = https://github.com/mos9527/SonyHeadphonesClient.git
+	url = https://github.com/cjahner1/SonyHeadphonesClient.git
 	branch = v1-compat

@@ -31,6 +31,9 @@ DeviceController::DeviceController(QObject *parent) : QObject(parent), m_bluez(t
         m_ambientLevel = ambient; m_focusOnVoice = focus; m_clearBass = clearBass;
         m_voiceGuidanceVolume = voice; m_automaticSourceSwitch = automatic; emit stateChanged();
     });
+    connect(&m_mdr, &MdrTransport::touchAssignmentsChanged, this, [this](const QString &left, const QString &right) {
+        m_leftTouchAssignment = left; m_rightTouchAssignment = right; emit stateChanged();
+    });
     m_bluez.refresh();
 }
 QString DeviceController::name() const {
@@ -68,6 +71,7 @@ void DeviceController::setFocusOnVoice(bool enabled) { if (m_mdr.setFocusOnVoice
 void DeviceController::setClearBass(int level) { if (m_mdr.setClearBass(level)) { m_clearBass = std::clamp(level, -10, 10); emit stateChanged(); } }
 void DeviceController::setVoiceGuidanceVolume(int level) { if (m_mdr.setVoiceGuidanceVolume(level)) { m_voiceGuidanceVolume = std::clamp(level, -2, 2); emit stateChanged(); } }
 void DeviceController::setAutomaticSourceSwitch(bool enabled) { if (m_mdr.setAutomaticSourceSwitch(enabled)) { m_automaticSourceSwitch = enabled; emit stateChanged(); } }
+void DeviceController::setTouchAssignment(const QString &side, const QString &assignment) { m_mdr.setTouchAssignment(side, assignment); }
 void DeviceController::setVolume(int volume) {
     if (m_mdr.setVolume(volume)) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
 }

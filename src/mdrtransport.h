@@ -26,6 +26,7 @@ public:
     bool setClearBass(int level);
     bool setVoiceGuidanceVolume(int level);
     bool setAutomaticSourceSwitch(bool enabled);
+    bool setTouchAssignment(const QString &side, const QString &assignment);
     bool playback(const QString &action);
     bool selectLocalPlaybackSource();
 signals:
@@ -34,6 +35,7 @@ signals:
     void soundStateChanged(int volume, const QString &noiseMode, bool speakToChat, bool dsee);
     void advancedStateChanged(int ambientLevel, bool focusOnVoice, int clearBass,
                               int voiceGuidanceVolume, bool automaticSourceSwitch);
+    void touchAssignmentsChanged(const QString &left, const QString &right);
     void playbackStateChanged(bool playing);
     void playbackSourceChanged(const QString &source, bool controllable);
     void playbackSourceSwitchStatusChanged(const QString &status);
@@ -44,6 +46,7 @@ private:
     void updateBatteries();
     void updateSoundState();
     void updatePairedDevices();
+    void updateTouchAssignments();
     void logSourceSwitchResult();
     bool commit(const QString &operation);
     MDRConnectionLinux *m_linux = nullptr;
