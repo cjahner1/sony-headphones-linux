@@ -4,24 +4,43 @@
 #include <QDBusMessage>
 #include <QDBusReply>
 #include <QDBusVariant>
-#include <QVariantMap>
+#include <QDebug>
 
-BluezDiscovery::BluezDiscovery(QObject *parent) : QObject(parent) { refresh(); }
+BluezDiscovery::BluezDiscovery(QObject *parent) : QObject(parent) {
+    qDBusRegisterMetaType<BluezInterfaceMap>();
+    qDBusRegisterMetaType<BluezManagedObjects>();
+    refresh();
+}
+
+bool BluezDiscovery::isSonyHeadphones(const QString &name) {
+    const auto normalized = name.toLower();
+    return normalized.contains("sony") || normalized.contains("wf-") ||
+           normalized.contains("wh-") || normalized.contains("linkbuds") ||
+           normalized.contains("inzone");
+}
 
 void BluezDiscovery::refresh() {
     QDBusInterface manager("org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
                            QDBusConnection::systemBus());
-    if (!manager.isValid()) { m_deviceName.clear(); m_connected = false; emit changed(); return; }
-    const auto reply = manager.call("GetManagedObjects");
-    const auto objects = qdbus_cast<QVariantMap>(reply.arguments().value(0));
+    if (!manager.isValid()) {
+        qWarning() << "BlueZ system service is unavailable:" << manager.lastError().message();
+        m_deviceName.clear(); m_connected = false; emit changed(); return;
+    }
+    const QDBusReply<BluezManagedObjects> reply = manager.call("GetManagedObjects");
+    if (!reply.isValid()) {
+        qWarning() << "Unable to enumerate BlueZ devices:" << reply.error().message();
+        m_deviceName.clear(); m_connected = false; emit changed(); return;
+    }
+    const auto objects = reply.value();
     QString foundName;
     bool foundConnected = false;
     for (auto object = objects.cbegin(); object != objects.cend(); ++object) {
-        const auto interfaces = qdbus_cast<QVariantMap>(object.value());
-        const auto props = qdbus_cast<QVariantMap>(interfaces.value("org.bluez.Device1"));
-        const auto name = props.value("Name").value<QDBusVariant>().variant().toString();
+        const auto props = object.value().value("org.bluez.Device1");
+        const auto name = props.value("Alias").value<QDBusVariant>().variant().toString().isEmpty()
+            ? props.value("Name").value<QDBusVariant>().variant().toString()
+            : props.value("Alias").value<QDBusVariant>().variant().toString();
         const auto connected = props.value("Connected").value<QDBusVariant>().variant().toBool();
-        if (name.contains("Sony", Qt::CaseInsensitive) && (connected || foundName.isEmpty())) {
+        if (isSonyHeadphones(name) && (connected || foundName.isEmpty())) {
             foundName = name;
             foundConnected = connected;
         }
