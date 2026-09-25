@@ -127,9 +127,9 @@ ApplicationWindow {
                         Label { text: "Touch sensor"; color: "#F7F8FC"; font.pixelSize: 16; font.weight: Font.DemiBold }
                         Row { enabled: device.mdrReady; opacity: enabled ? 1 : 0.45; spacing: 10
                             Label { text: "Left"; color: "#B2B6C5"; width: 42; anchors.verticalCenter: parent.verticalCenter }
-                            ComboBox { id: leftTouch; model: ["Playback", "Noise control", "Volume", "Quick Access"]; currentIndex: Math.max(0, model.indexOf(device.leftTouchAssignment)); onActivated: device.setTouchAssignment("left", currentText) }
+                            ComboBox { id: leftTouch; model: ["Playback", "Noise control", "Volume", "Quick Access", "Noise control Quick Access", "Track control", "Ambient sound / microphone", "Listening mode Quick Access", "Ambient sound / listening mode", "Chat mix", "Custom 1", "Custom 2"]; currentIndex: model.indexOf(device.leftTouchAssignment); onActivated: device.setTouchAssignment("left", currentText) }
                             Label { text: "Right"; color: "#B2B6C5"; width: 42; anchors.verticalCenter: parent.verticalCenter }
-                            ComboBox { id: rightTouch; model: ["Playback", "Noise control", "Volume", "Quick Access"]; currentIndex: Math.max(0, model.indexOf(device.rightTouchAssignment)); onActivated: device.setTouchAssignment("right", currentText) }
+                            ComboBox { id: rightTouch; model: ["Playback", "Noise control", "Volume", "Quick Access", "Noise control Quick Access", "Track control", "Ambient sound / microphone", "Listening mode Quick Access", "Ambient sound / listening mode", "Chat mix", "Custom 1", "Custom 2"]; currentIndex: model.indexOf(device.rightTouchAssignment); onActivated: device.setTouchAssignment("right", currentText) }
                         }
                     }
                 }

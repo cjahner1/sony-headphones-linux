@@ -16,6 +16,14 @@ QString touchName(MDRAssignableAction action) {
     if (action == MDR_ASSIGNABLE_NOISE_CONTROL) return "Noise control";
     if (action == MDR_ASSIGNABLE_VOLUME) return "Volume";
     if (action == MDR_ASSIGNABLE_QUICK_ACCESS) return "Quick Access";
+    if (action == MDR_ASSIGNABLE_NOISE_CONTROL_QUICK_ACCESS) return "Noise control Quick Access";
+    if (action == MDR_ASSIGNABLE_TRACK_CONTROL) return "Track control";
+    if (action == MDR_ASSIGNABLE_AMBIENT_SOUND_CONTROL_MIC) return "Ambient sound / microphone";
+    if (action == MDR_ASSIGNABLE_LISTENING_MODE_QUICK_ACCESS) return "Listening mode Quick Access";
+    if (action == MDR_ASSIGNABLE_AMBIENT_SOUND_CONTROL_LISTENING_MODE) return "Ambient sound / listening mode";
+    if (action == MDR_ASSIGNABLE_CHAT_MIX) return "Chat mix";
+    if (action == MDR_ASSIGNABLE_CUSTOM1) return "Custom 1";
+    if (action == MDR_ASSIGNABLE_CUSTOM2) return "Custom 2";
     return "Unavailable";
 }
 MDRAssignableAction touchAction(const QString &name) {
@@ -23,6 +31,14 @@ MDRAssignableAction touchAction(const QString &name) {
     if (name == "Noise control") return MDR_ASSIGNABLE_NOISE_CONTROL;
     if (name == "Volume") return MDR_ASSIGNABLE_VOLUME;
     if (name == "Quick Access") return MDR_ASSIGNABLE_QUICK_ACCESS;
+    if (name == "Noise control Quick Access") return MDR_ASSIGNABLE_NOISE_CONTROL_QUICK_ACCESS;
+    if (name == "Track control") return MDR_ASSIGNABLE_TRACK_CONTROL;
+    if (name == "Ambient sound / microphone") return MDR_ASSIGNABLE_AMBIENT_SOUND_CONTROL_MIC;
+    if (name == "Listening mode Quick Access") return MDR_ASSIGNABLE_LISTENING_MODE_QUICK_ACCESS;
+    if (name == "Ambient sound / listening mode") return MDR_ASSIGNABLE_AMBIENT_SOUND_CONTROL_LISTENING_MODE;
+    if (name == "Chat mix") return MDR_ASSIGNABLE_CHAT_MIX;
+    if (name == "Custom 1") return MDR_ASSIGNABLE_CUSTOM1;
+    if (name == "Custom 2") return MDR_ASSIGNABLE_CUSTOM2;
     return MDR_ASSIGNABLE_NONE;
 }
 }
