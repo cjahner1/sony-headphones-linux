@@ -25,7 +25,7 @@ bool DeviceController::connected() const { return m_bluez.connected(); }
 QString DeviceController::protocolStatus() const {
     return connected() ? m_mdr.status() : "Pair your WF-1000XM6 in Bluetooth Settings";
 }
-void DeviceController::refresh() { m_bluez.refresh(); }
+void DeviceController::refresh() { m_bluez.refresh(); m_mdr.refresh(); }
 void DeviceController::setNoiseMode(const QString &mode) {
     if (m_mdr.setNoiseMode(mode)) { m_noiseMode = mode; emit stateChanged(); }
 }

@@ -39,6 +39,13 @@ void MdrTransport::disconnect() {
     m_connecting = false; m_ready = false;
 }
 
+void MdrTransport::refresh() {
+    if (!m_ready || !m_headphones) return;
+    qInfo() << "Requesting MDR state and multipoint refresh";
+    if (mdrHeadphonesIsReady(m_headphones)) mdrHeadphonesRequestSync(m_headphones);
+    updatePairedDevices();
+}
+
 void MdrTransport::fail(const QString &message) {
     qWarning() << message;
     disconnect();
@@ -112,6 +119,7 @@ void MdrTransport::updateSoundState() {
 }
 
 void MdrTransport::updatePairedDevices() {
+    qInfo() << "Querying MDR multipoint devices";
     if (!m_headphones) return;
     uint32_t count = 0;
     const auto countResult = mdrHeadphonesGetPairedDevices(m_headphones, nullptr, &count);

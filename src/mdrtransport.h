@@ -13,6 +13,7 @@ public:
     ~MdrTransport() override;
     void connectTo(const QString &address);
     void disconnect();
+    void refresh();
     bool ready() const { return m_ready; }
     QString status() const { return m_status; }
     bool setNoiseMode(const QString &mode);
