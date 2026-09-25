@@ -42,7 +42,7 @@ ApplicationWindow {
                 Card { Layout.fillWidth: true; Layout.minimumHeight: 270
                     Column { anchors.fill: parent; anchors.margins: 28; spacing: 16
                         Label { text: "Listening mode"; color: "#F7F8FC"; font.pixelSize: 19; font.weight: Font.DemiBold }
-                        RowLayout { width: parent.width; spacing: 10
+                        RowLayout { width: parent.width; spacing: 10; enabled: device.mdrReady; opacity: enabled ? 1 : 0.45
                             NoiseModeButton { Layout.fillWidth: true; mode: "Noise\ncancelling"; selected: device.noiseMode === "Noise cancelling"; onClicked: device.setNoiseMode("Noise cancelling") }
                             NoiseModeButton { Layout.fillWidth: true; mode: "Ambient\nsound"; selected: device.noiseMode === "Ambient sound"; onClicked: device.setNoiseMode("Ambient sound") }
                             NoiseModeButton { Layout.fillWidth: true; mode: "Off"; selected: device.noiseMode === "Off"; onClicked: device.setNoiseMode("Off") }
@@ -56,6 +56,7 @@ ApplicationWindow {
                     Column { anchors.fill: parent; anchors.margins: 28; spacing: 16
                         Label { text: "Sound"; color: "#F7F8FC"; font.pixelSize: 19; font.weight: Font.DemiBold }
                         Row {
+                            enabled: device.mdrReady; opacity: enabled ? 1 : 0.45
                             spacing: 12
                             Label { text: "Volume"; color: "#B2B6C5"; width: 76; anchors.verticalCenter: parent.verticalCenter }
                             Slider { width: 240; from: 0; to: 100; value: device.volume; onMoved: device.setVolume(value) }
@@ -67,8 +68,8 @@ ApplicationWindow {
                 Card { Layout.fillWidth: true; Layout.minimumHeight: 215
                     Column { anchors.fill: parent; anchors.margins: 28; spacing: 10
                         Label { text: "Smart features"; color: "#F7F8FC"; font.pixelSize: 19; font.weight: Font.DemiBold }
-                        Switch { text: "Speak-to-Chat"; checked: device.speakToChat; onToggled: device.setSpeakToChat(checked) }
-                        Switch { text: "DSEE Extreme"; checked: device.dsee; onToggled: device.setDsee(checked) }
+                        Switch { text: "Speak-to-Chat"; enabled: device.mdrReady; checked: device.speakToChat; onToggled: device.setSpeakToChat(checked) }
+                        Switch { text: "DSEE Extreme"; enabled: device.mdrReady; checked: device.dsee; onToggled: device.setDsee(checked) }
                         Label { text: "Settings apply when the MDR session is connected."; color: "#8F94A3"; font.pixelSize: 13 }
                     }
                 }

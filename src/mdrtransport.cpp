@@ -6,6 +6,8 @@
 
 #include <QDebug>
 
+#include <algorithm>
+
 MdrTransport::MdrTransport(QObject *parent) : QObject(parent) {
     m_timer.setInterval(20);
     connect(&m_timer, &QTimer::timeout, this, &MdrTransport::poll);
@@ -81,4 +83,51 @@ void MdrTransport::updateBatteries() {
         if (batteries[i].part == MDR_BATTERY_CASE) caseLevel = batteries[i].level_percent;
     }
     emit batteriesChanged(left, right, caseLevel);
+}
+
+bool MdrTransport::commit(const QString &operation) {
+    if (!m_ready || !m_headphones) {
+        qWarning() << operation << "ignored: MDR session is not ready";
+        return false;
+    }
+    const auto result = mdrHeadphonesRequestCommit(m_headphones);
+    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
+    qWarning() << operation << "commit failed:" << mdrResultString(result);
+    return false;
+}
+
+bool MdrTransport::setNoiseMode(const QString &mode) {
+    MDRNoiseControl noise{};
+    if (!m_ready || mdrHeadphonesGetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    if (mode == "Noise cancelling") noise.mode = MDR_NOISE_MODE_CANCELLING;
+    else if (mode == "Ambient sound") noise.mode = MDR_NOISE_MODE_AMBIENT;
+    else if (mode == "Off") noise.mode = MDR_NOISE_MODE_OFF;
+    else return false;
+    if (mdrHeadphonesSetNoiseControl(m_headphones, &noise) != MDR_RESULT_OK) return false;
+    return commit("Noise mode");
+}
+
+bool MdrTransport::setSpeakToChat(bool enabled) {
+    MDRSpeakToChat speak{};
+    if (!m_ready || mdrHeadphonesGetSpeakToChat(m_headphones, &speak) != MDR_RESULT_OK) return false;
+    speak.enabled = enabled ? MDR_TRUE : MDR_FALSE;
+    if (mdrHeadphonesSetSpeakToChat(m_headphones, &speak) != MDR_RESULT_OK) return false;
+    return commit("Speak-to-Chat");
+}
+
+bool MdrTransport::setDsee(bool enabled) {
+    MDREqualizer equalizer{};
+    if (!m_ready || mdrHeadphonesGetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK || !equalizer.dsee_available)
+        return false;
+    equalizer.dsee_enabled = enabled ? MDR_TRUE : MDR_FALSE;
+    if (mdrHeadphonesSetEqualizer(m_headphones, &equalizer) != MDR_RESULT_OK) return false;
+    return commit("DSEE");
+}
+
+bool MdrTransport::setVolume(int volume) {
+    MDRPlayback playback{};
+    if (!m_ready || mdrHeadphonesGetPlayback(m_headphones, &playback) != MDR_RESULT_OK) return false;
+    playback.volume = static_cast<uint8_t>(std::clamp(volume, 0, 100));
+    if (mdrHeadphonesSetPlayback(m_headphones, &playback) != MDR_RESULT_OK) return false;
+    return commit("Volume");
 }

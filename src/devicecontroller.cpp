@@ -22,7 +22,15 @@ QString DeviceController::protocolStatus() const {
     return connected() ? m_mdr.status() : "Pair your WF-1000XM6 in Bluetooth Settings";
 }
 void DeviceController::refresh() { m_bluez.refresh(); }
-void DeviceController::setNoiseMode(const QString &mode) { m_noiseMode = mode; emit stateChanged(); }
-void DeviceController::setSpeakToChat(bool enabled) { m_speakToChat = enabled; emit stateChanged(); }
-void DeviceController::setDsee(bool enabled) { m_dsee = enabled; emit stateChanged(); }
-void DeviceController::setVolume(int volume) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
+void DeviceController::setNoiseMode(const QString &mode) {
+    if (m_mdr.setNoiseMode(mode)) { m_noiseMode = mode; emit stateChanged(); }
+}
+void DeviceController::setSpeakToChat(bool enabled) {
+    if (m_mdr.setSpeakToChat(enabled)) { m_speakToChat = enabled; emit stateChanged(); }
+}
+void DeviceController::setDsee(bool enabled) {
+    if (m_mdr.setDsee(enabled)) { m_dsee = enabled; emit stateChanged(); }
+}
+void DeviceController::setVolume(int volume) {
+    if (m_mdr.setVolume(volume)) { m_volume = std::clamp(volume, 0, 100); emit stateChanged(); }
+}

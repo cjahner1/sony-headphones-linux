@@ -18,6 +18,7 @@ class DeviceController final : public QObject {
     Q_PROPERTY(bool speakToChat READ speakToChat NOTIFY stateChanged)
     Q_PROPERTY(bool dsee READ dsee NOTIFY stateChanged)
     Q_PROPERTY(QString protocolStatus READ protocolStatus NOTIFY stateChanged)
+    Q_PROPERTY(bool mdrReady READ mdrReady NOTIFY stateChanged)
 public:
     explicit DeviceController(QObject *parent = nullptr);
     QString name() const;
@@ -30,6 +31,7 @@ public:
     bool speakToChat() const { return m_speakToChat; }
     bool dsee() const { return m_dsee; }
     QString protocolStatus() const;
+    bool mdrReady() const { return m_mdr.ready(); }
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void setNoiseMode(const QString &mode);
     Q_INVOKABLE void setSpeakToChat(bool enabled);

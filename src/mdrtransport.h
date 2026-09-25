@@ -15,6 +15,10 @@ public:
     void disconnect();
     bool ready() const { return m_ready; }
     QString status() const { return m_status; }
+    bool setNoiseMode(const QString &mode);
+    bool setSpeakToChat(bool enabled);
+    bool setDsee(bool enabled);
+    bool setVolume(int volume);
 signals:
     void stateChanged();
     void batteriesChanged(int left, int right, int caseLevel);
@@ -23,6 +27,7 @@ private slots:
 private:
     void fail(const QString &message);
     void updateBatteries();
+    bool commit(const QString &operation);
     MDRConnectionLinux *m_linux = nullptr;
     MDRHeadphones *m_headphones = nullptr;
     QTimer m_timer;
