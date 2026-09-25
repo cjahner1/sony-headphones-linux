@@ -157,20 +157,27 @@ bool MdrTransport::setVolume(int volume) {
 }
 
 bool MdrTransport::playback(const QString &action) {
-    if (!m_ready || !m_headphones) return false;
+    if (!m_ready || !m_headphones) {
+        qWarning() << "Playback command ignored: MDR session is not ready:" << action;
+        return false;
+    }
     MDRPlaybackCommand command{};
     if (action == "play") command.action = MDR_PLAYBACK_PLAY;
     else if (action == "pause") command.action = MDR_PLAYBACK_PAUSE;
     else if (action == "next") command.action = MDR_PLAYBACK_NEXT;
     else if (action == "previous") command.action = MDR_PLAYBACK_PREVIOUS;
     else return false;
+    qInfo() << "Sending MDR playback command:" << action;
     const auto result = mdrHeadphonesPlayback(m_headphones, &command);
-    if (result == MDR_RESULT_OK) return true;
+    if (result == MDR_RESULT_OK) {
+        qInfo() << "MDR playback command accepted:" << action;
+        return true;
+    }
     if (result == MDR_RESULT_INPROGRESS) {
         m_pendingPlayback = action;
         qInfo() << "Queued playback command until MDR is ready:" << action;
         return true;
     }
-    qWarning() << "Playback command failed:" << mdrResultString(result);
+    qWarning() << "MDR playback command failed:" << action << mdrResultString(result);
     return false;
 }
