@@ -79,7 +79,10 @@ void MdrTransport::poll() {
     if (event == MDR_EVENT_NOISE_CONTROL_CHANGED || event == MDR_EVENT_SPEAK_TO_CHAT_CHANGED ||
         event == MDR_EVENT_PLAYBACK_CHANGED || event == MDR_EVENT_EQUALIZER_CHANGED ||
         event == MDR_EVENT_SYNC_COMPLETE) updateSoundState();
-    if (event == MDR_EVENT_PAIRED_DEVICES_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) updatePairedDevices();
+    if (event == MDR_EVENT_PAIRED_DEVICES_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) {
+        if (m_sourceSwitchPending && event == MDR_EVENT_PAIRED_DEVICES_CHANGED) logSourceSwitchResult();
+        updatePairedDevices();
+    }
     if (mdrHeadphonesIsReady(m_headphones) && !m_ready) {
         m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); updatePairedDevices(); emit stateChanged();
     }
@@ -160,6 +163,21 @@ void MdrTransport::updatePairedDevices() {
     qInfo().noquote() << QString("MDR playback source: '%1'; local host '%2'; media controls available=%3")
         .arg(playbackSource, localHost, playbackControllable ? "true" : "false");
     emit playbackSourceChanged(playbackSource, playbackControllable);
+}
+
+void MdrTransport::logSourceSwitchResult() {
+    m_sourceSwitchPending = false;
+    MDRSourceSwitchControlResult result{};
+    if (mdrHeadphonesGetSourceSwitchControlResult(m_headphones, &result) != MDR_RESULT_OK) {
+        qWarning() << "MDR playback source switch completed, but no result was available";
+        return;
+    }
+    QString outcome = "failed";
+    if (result == MDR_SOURCE_SWITCH_CONTROL_SUCCESS) outcome = "success";
+    else if (result == MDR_SOURCE_SWITCH_CONTROL_FAILED_ON_CALL) outcome = "failed: call is active";
+    else if (result == MDR_SOURCE_SWITCH_CONTROL_FAILED_NOT_CONNECTED) outcome = "failed: target is not connected for audio";
+    else if (result == MDR_SOURCE_SWITCH_CONTROL_FAILED_VOICE_ASSISTANT) outcome = "failed: voice assistant has priority";
+    qInfo() << "MDR playback source switch result:" << outcome;
 }
 
 bool MdrTransport::commit(const QString &operation) {
@@ -252,7 +270,16 @@ bool MdrTransport::selectLocalPlaybackSource() {
     const auto result = mdrHeadphonesSetPairedDevice(m_headphones, &action);
     if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) {
         qInfo() << "MDR playback source switch staged";
-        return commit("MDR playback source switch");
+        if (!commit("MDR playback source switch")) return false;
+        m_sourceSwitchPending = true;
+        QTimer::singleShot(5000, this, [this] {
+            if (m_sourceSwitchPending) {
+                m_sourceSwitchPending = false;
+                qWarning() << "MDR playback source switch timed out waiting for a headphone response";
+                updatePairedDevices();
+            }
+        });
+        return true;
     }
     qWarning() << "MDR playback source switch failed:" << mdrResultString(result);
     return false;

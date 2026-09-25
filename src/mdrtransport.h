@@ -36,6 +36,7 @@ private:
     void updateBatteries();
     void updateSoundState();
     void updatePairedDevices();
+    void logSourceSwitchResult();
     bool commit(const QString &operation);
     MDRConnectionLinux *m_linux = nullptr;
     MDRHeadphones *m_headphones = nullptr;
@@ -46,4 +47,5 @@ private:
     bool m_ready = false;
     QString m_pendingPlayback;
     QString m_localPlaybackDeviceId;
+    bool m_sourceSwitchPending = false;
 };
