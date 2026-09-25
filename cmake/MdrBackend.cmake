@@ -19,6 +19,11 @@ add_library(mdr STATIC ${MDR_SOURCES})
 target_link_libraries(mdr PUBLIC mdr_Includes)
 target_include_directories(mdr PUBLIC ${MDR_VENDOR}/libmdr/src)
 target_include_directories(mdr BEFORE PRIVATE ${CMAKE_SOURCE_DIR}/cmake/fmt-compat)
+# Upstream Protocol.hpp uses std::memcpy but does not include <cstring> itself.
+# Keep the pinned vendor tree unmodified while making this target portable.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mdr PRIVATE "SHELL:-include cstring")
+endif()
 
 add_library(mdr-bt STATIC
     ${MDR_VENDOR}/libmdr-bt/src/Linux/ConnectionLinux.cpp
