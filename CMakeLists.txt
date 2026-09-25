@@ -7,6 +7,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# The pinned MDR headers use std::memcpy without including <cstring>. Apply the
+# standard header to every C++ translation unit, including generated protocol
+# code and any downstream static-library consumer.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options("SHELL:-include cstring")
+endif()
+
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 DBus)
 include(cmake/MdrBackend.cmake)
 
