@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ qt6-base-dev qt6-declarative-dev qt6-tools-dev libbluetooth-dev
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Package
+        run: cpack --config build/CPackConfig.cmake -B dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sony-headphones-linux-ubuntu-24.04
+          path: dist/*.tar.gz
+          if-no-files-found: error

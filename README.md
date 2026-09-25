@@ -22,7 +22,7 @@ cmake --build build
 ./build/sony-headphones-linux
 ```
 
-Required packages: Qt 6.5+ (Core, Gui, QML, Quick, Quick Controls 2, DBus), CMake 3.22+, and a C++20 compiler. BlueZ is used at runtime.
+Required packages: Qt 6.4+ (Core, Gui, QML, Quick, Quick Controls 2, DBus), CMake 3.22+, and a C++20 compiler. BlueZ is used at runtime.
 
 ## Parity roadmap
 
