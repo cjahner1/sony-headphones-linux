@@ -115,12 +115,7 @@ bool MdrTransport::commit(const QString &operation) {
         return false;
     }
     const auto result = mdrHeadphonesRequestCommit(m_headphones);
-    if (result == MDR_RESULT_OK) return true;
-    if (result == MDR_RESULT_INPROGRESS) {
-        m_pendingPlayback = action;
-        qInfo() << "Queued playback command until MDR is ready:" << action;
-        return true;
-    }
+    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
     qWarning() << operation << "commit failed:" << mdrResultString(result);
     return false;
 }
@@ -170,7 +165,12 @@ bool MdrTransport::playback(const QString &action) {
     else if (action == "previous") command.action = MDR_PLAYBACK_PREVIOUS;
     else return false;
     const auto result = mdrHeadphonesPlayback(m_headphones, &command);
-    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
+    if (result == MDR_RESULT_OK) return true;
+    if (result == MDR_RESULT_INPROGRESS) {
+        m_pendingPlayback = action;
+        qInfo() << "Queued playback command until MDR is ready:" << action;
+        return true;
+    }
     qWarning() << "Playback command failed:" << mdrResultString(result);
     return false;
 }
