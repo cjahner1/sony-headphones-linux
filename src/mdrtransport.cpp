@@ -168,7 +168,10 @@ bool MdrTransport::commit(const QString &operation) {
         return false;
     }
     const auto result = mdrHeadphonesRequestCommit(m_headphones);
-    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) return true;
+    if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) {
+        qInfo() << operation << "commit accepted";
+        return true;
+    }
     qWarning() << operation << "commit failed:" << mdrResultString(result);
     return false;
 }
@@ -248,8 +251,8 @@ bool MdrTransport::selectLocalPlaybackSource() {
     qInfo() << "Requesting MDR playback source switch to local device:" << m_localPlaybackDeviceId;
     const auto result = mdrHeadphonesSetPairedDevice(m_headphones, &action);
     if (result == MDR_RESULT_OK || result == MDR_RESULT_INPROGRESS) {
-        qInfo() << "MDR playback source switch accepted";
-        return true;
+        qInfo() << "MDR playback source switch staged";
+        return commit("MDR playback source switch");
     }
     qWarning() << "MDR playback source switch failed:" << mdrResultString(result);
     return false;
