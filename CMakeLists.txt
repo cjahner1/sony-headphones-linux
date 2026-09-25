@@ -17,6 +17,8 @@ qt_add_executable(sony-headphones-linux
     src/devicecontroller.h
     src/bluezdiscovery.cpp
     src/bluezdiscovery.h
+    src/logging.cpp
+    src/logging.h
 )
 
 qt_add_qml_module(sony-headphones-linux

@@ -21,6 +21,7 @@ bool BluezDiscovery::isSonyHeadphones(const QString &name) {
 }
 
 void BluezDiscovery::refresh() {
+    qInfo() << "Refreshing BlueZ device list";
     QDBusInterface manager("org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
                            QDBusConnection::systemBus());
     if (!manager.isValid()) {
@@ -33,6 +34,7 @@ void BluezDiscovery::refresh() {
         m_deviceName.clear(); m_connected = false; emit changed(); return;
     }
     const auto objects = reply.value();
+    qInfo() << "BlueZ managed objects:" << objects.size();
     QString foundName;
     bool foundConnected = false;
     for (auto object = objects.cbegin(); object != objects.cend(); ++object) {
@@ -41,6 +43,16 @@ void BluezDiscovery::refresh() {
             ? props.value("Name").value<QDBusVariant>().variant().toString()
             : props.value("Alias").value<QDBusVariant>().variant().toString();
         const auto connected = props.value("Connected").value<QDBusVariant>().variant().toBool();
+        const auto paired = props.value("Paired").value<QDBusVariant>().variant().toBool();
+        if (!props.isEmpty()) {
+            qInfo().noquote() << QString("BlueZ device %1: alias='%2', name='%3', paired=%4, connected=%5, Sony-match=%6")
+                .arg(object.key().path(),
+                     props.value("Alias").value<QDBusVariant>().variant().toString(),
+                     props.value("Name").value<QDBusVariant>().variant().toString())
+                .arg(paired ? "true" : "false")
+                .arg(connected ? "true" : "false")
+                .arg(isSonyHeadphones(name) ? "true" : "false");
+        }
         if (isSonyHeadphones(name) && (connected || foundName.isEmpty())) {
             foundName = name;
             foundConnected = connected;
@@ -48,5 +60,6 @@ void BluezDiscovery::refresh() {
     }
     m_deviceName = foundName;
     m_connected = foundConnected;
+    qInfo() << "Selected Sony device:" << m_deviceName << "connected:" << m_connected;
     emit changed();
 }

@@ -5,11 +5,13 @@
 #include <QUrl>
 
 #include "devicecontroller.h"
+#include "logging.h"
 
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     app.setApplicationName("Sony Headphones");
     app.setOrganizationName("Chris Jahner");
+    installFileLogger();
     QQuickStyle::setStyle("Basic");
 
     DeviceController device;

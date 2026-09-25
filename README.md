@@ -24,6 +24,16 @@ cmake --build build
 
 Required packages: Qt 6.4+ (Core, Gui, QML, Quick, Quick Controls 2, DBus), CMake 3.22+, and a C++20 compiler. BlueZ is used at runtime.
 
+## Diagnostics
+
+The app writes a persistent log to:
+
+```sh
+~/.local/share/Chris Jahner/Sony Headphones/sony-headphones-linux.log
+```
+
+It logs every BlueZ device seen during each refresh, including its alias, name, paired and connected state. If discovery fails, attach that log when reporting an issue.
+
 ## Parity roadmap
 
 The upstream MDR implementation documents working WF-1000XM6 support for battery, volume, noise/ambient mode, sound pressure, voice guidance, media controls, multipoint, Speak-to-Chat, touch gestures, power-off, Capture Voice During Call, and DSEE. Equalizer is the first protocol feature to finish; firmware updates stay out of scope until their update flow is independently validated.
