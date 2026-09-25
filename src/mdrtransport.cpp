@@ -7,6 +7,7 @@
 #include <QDebug>
 
 #include <algorithm>
+#include <vector>
 
 MdrTransport::MdrTransport(QObject *parent) : QObject(parent) {
     m_timer.setInterval(20);
@@ -70,8 +71,9 @@ void MdrTransport::poll() {
     if (event == MDR_EVENT_NOISE_CONTROL_CHANGED || event == MDR_EVENT_SPEAK_TO_CHAT_CHANGED ||
         event == MDR_EVENT_PLAYBACK_CHANGED || event == MDR_EVENT_EQUALIZER_CHANGED ||
         event == MDR_EVENT_SYNC_COMPLETE) updateSoundState();
+    if (event == MDR_EVENT_PAIRED_DEVICES_CHANGED || event == MDR_EVENT_SYNC_COMPLETE) updatePairedDevices();
     if (mdrHeadphonesIsReady(m_headphones) && !m_ready) {
-        m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); emit stateChanged();
+        m_ready = true; m_status = "MDR connected"; updateBatteries(); updateSoundState(); updatePairedDevices(); emit stateChanged();
     }
     if (m_ready && !m_pendingPlayback.isEmpty() && mdrHeadphonesIsReady(m_headphones)) {
         const auto pending = m_pendingPlayback;
@@ -107,6 +109,20 @@ void MdrTransport::updateSoundState() {
                            hasSpeak && speak.enabled == MDR_TRUE,
                            hasEqualizer && equalizer.dsee_enabled == MDR_TRUE);
     if (hasPlayback) emit playbackStateChanged(playback.status == MDR_PLAYBACK_PLAYING);
+}
+
+void MdrTransport::updatePairedDevices() {
+    if (!m_headphones) return;
+    uint32_t count = 0;
+    if (mdrHeadphonesGetPairedDevices(m_headphones, nullptr, &count) != MDR_RESULT_OK || !count) return;
+    std::vector<MDRPairedDevice> devices(count);
+    if (mdrHeadphonesGetPairedDevices(m_headphones, devices.data(), &count) != MDR_RESULT_OK) return;
+    qInfo() << "MDR multipoint devices:" << count;
+    for (uint32_t i = 0; i < count; ++i)
+        qInfo().noquote() << QString("MDR device: '%1' (%2), connected=%3, playback-source=%4")
+            .arg(devices[i].name, devices[i].macAddress)
+            .arg(devices[i].connected == MDR_TRUE ? "true" : "false")
+            .arg(devices[i].playback_device == MDR_TRUE ? "true" : "false");
 }
 
 bool MdrTransport::commit(const QString &operation) {

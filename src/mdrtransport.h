@@ -31,6 +31,7 @@ private:
     void fail(const QString &message);
     void updateBatteries();
     void updateSoundState();
+    void updatePairedDevices();
     bool commit(const QString &operation);
     MDRConnectionLinux *m_linux = nullptr;
     MDRHeadphones *m_headphones = nullptr;
