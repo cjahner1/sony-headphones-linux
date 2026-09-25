@@ -37,16 +37,17 @@ void BluezDiscovery::refresh() {
                            QDBusConnection::systemBus());
     if (!manager.isValid()) {
         qWarning() << "BlueZ system service is unavailable:" << manager.lastError().message();
-        m_deviceName.clear(); m_connected = false; emit changed(); return;
+        m_deviceName.clear(); m_address.clear(); m_connected = false; emit changed(); return;
     }
     const QDBusReply<BluezManagedObjects> reply = manager.call("GetManagedObjects");
     if (!reply.isValid()) {
         qWarning() << "Unable to enumerate BlueZ devices:" << reply.error().message();
-        m_deviceName.clear(); m_connected = false; emit changed(); return;
+        m_deviceName.clear(); m_address.clear(); m_connected = false; emit changed(); return;
     }
     const auto objects = reply.value();
     qInfo() << "BlueZ managed objects:" << objects.size();
     QString foundName;
+    QString foundAddress;
     bool foundConnected = false;
     for (auto object = objects.cbegin(); object != objects.cend(); ++object) {
         const auto props = object.value().value("org.bluez.Device1");
@@ -55,6 +56,7 @@ void BluezDiscovery::refresh() {
         const auto name = alias.isEmpty() ? reportedName : alias;
         const auto connected = bluezProperty(props, "Connected").toBool();
         const auto paired = bluezProperty(props, "Paired").toBool();
+        const auto address = bluezProperty(props, "Address").toString();
         if (!props.isEmpty()) {
             qInfo().noquote() << QString("BlueZ device %1: alias='%2', name='%3', paired=%4, connected=%5, Sony-match=%6")
                 .arg(object.key().path(),
@@ -65,10 +67,12 @@ void BluezDiscovery::refresh() {
         }
         if (isSonyHeadphones(name) && (connected || foundName.isEmpty())) {
             foundName = name;
+            foundAddress = address;
             foundConnected = connected;
         }
     }
     m_deviceName = foundName;
+    m_address = foundAddress;
     m_connected = foundConnected;
     qInfo() << "Selected Sony device:" << m_deviceName << "connected:" << m_connected;
     emit changed();

@@ -19,11 +19,13 @@ public:
     explicit BluezDiscovery(QObject *parent = nullptr);
     Q_INVOKABLE void refresh();
     QString deviceName() const { return m_deviceName; }
+    QString address() const { return m_address; }
     bool connected() const { return m_connected; }
 signals:
     void changed();
 private:
     static bool isSonyHeadphones(const QString &name);
     QString m_deviceName;
+    QString m_address;
     bool m_connected = false;
 };

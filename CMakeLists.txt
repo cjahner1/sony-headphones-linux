@@ -8,6 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 DBus)
+include(cmake/MdrBackend.cmake)
 
 qt_standard_project_setup(REQUIRES 6.4)
 
@@ -19,6 +20,8 @@ qt_add_executable(sony-headphones-linux
     src/bluezdiscovery.h
     src/logging.cpp
     src/logging.h
+    src/mdrtransport.cpp
+    src/mdrtransport.h
 )
 
 qt_add_qml_module(sony-headphones-linux
@@ -32,7 +35,7 @@ qt_add_qml_module(sony-headphones-linux
 )
 
 target_link_libraries(sony-headphones-linux PRIVATE
-    Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::DBus
+    Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::DBus mdr-bt
 )
 
 include(GNUInstallDirs)

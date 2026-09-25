@@ -4,6 +4,7 @@
 #include <QString>
 
 #include "bluezdiscovery.h"
+#include "mdrtransport.h"
 
 class DeviceController final : public QObject {
     Q_OBJECT
@@ -38,6 +39,7 @@ signals:
     void stateChanged();
 private:
     BluezDiscovery m_bluez;
+    MdrTransport m_mdr;
     int m_batteryLeft = 0, m_batteryRight = 0, m_batteryCase = 0, m_volume = 50;
     QString m_noiseMode = "Noise cancelling";
     bool m_speakToChat = false, m_dsee = true;

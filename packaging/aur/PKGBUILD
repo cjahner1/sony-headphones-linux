@@ -6,8 +6,8 @@ pkgdesc='Native Linux companion for Sony headphones'
 arch=('x86_64')
 url='https://github.com/cjahner1/sony-headphones-linux'
 license=('MIT')
-depends=('qt6-base' 'qt6-declarative' 'bluez')
-makedepends=('cmake' 'ninja' 'git' 'gcc')
+depends=('qt6-base' 'qt6-declarative' 'bluez-libs' 'fmt')
+makedepends=('cmake' 'ninja' 'git' 'gcc' 'dbus' 'pkgconf')
 source=("${pkgname}::git+${url}.git#tag=v${pkgver}")
 sha256sums=('SKIP')
 
